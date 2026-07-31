@@ -11,33 +11,24 @@ import android.speech.SpeechRecognizer
 import android.util.Log
 
 /**
- * Offline-first STT.
+ * Offline-preferring STT with real capability checks and no mock transcripts.
  *
- * Priority:
- * 1. Vosk (when model + lib are present) — true offline, privacy-first
- * 2. System SpeechRecognizer with EXTRA_PREFER_OFFLINE
- * 3. Error surface
- *
- * Vosk integration: add `implementation("com.alphacephei:vosk-android:0.3.47")`
- * (or latest) and ship a small model under assets/. The Vosk path is
- * activated automatically when the model is found.
+ * Active path: system SpeechRecognizer + EXTRA_PREFER_OFFLINE.
+ * Vosk: only if dependency + model are both present (not simulated).
  */
 class LocalSttEngine(private val context: Context) {
 
     private var recognizer: SpeechRecognizer? = null
     private val mainHandler = Handler(Looper.getMainLooper())
-    private var voskAvailable = false // set true after successful model load
+    private var listening = false
 
-    init {
-        // Probe for Vosk model (assets/model-en-us or similar)
-        try {
-            context.assets.open("model/am/final.mdl").close()
-            voskAvailable = true
-            Log.i(TAG, "Vosk model detected — will prefer offline Vosk path")
-        } catch (_: Exception) {
-            voskAvailable = false
+    val isSystemRecognitionAvailable: Boolean
+        get() = try {
+            SpeechRecognizer.isRecognitionAvailable(context)
+        } catch (e: Exception) {
+            Log.w(TAG, "isRecognitionAvailable failed", e)
+            false
         }
-    }
 
     fun start(
         onPartial: (String) -> Unit,
@@ -46,47 +37,43 @@ class LocalSttEngine(private val context: Context) {
     ) {
         cancel()
 
-        if (voskAvailable) {
-            startVosk(onPartial, onFinal, onError)
-            return
-        }
-
-        // System offline path
-        if (!SpeechRecognizer.isRecognitionAvailable(context)) {
-            onError("No on-device recognizer available")
+        if (!isSystemRecognitionAvailable) {
+            onError("No speech recognizer on this device")
             return
         }
 
         mainHandler.post {
-            recognizer = SpeechRecognizer.createSpeechRecognizer(context).apply {
-                setRecognitionListener(object : RecognitionListener {
-                    override fun onReadyForSpeech(params: Bundle?) {}
+            try {
+                val r = SpeechRecognizer.createSpeechRecognizer(context)
+                recognizer = r
+                r.setRecognitionListener(object : RecognitionListener {
+                    override fun onReadyForSpeech(params: Bundle?) {
+                        listening = true
+                    }
                     override fun onBeginningOfSpeech() {}
                     override fun onRmsChanged(rmsdB: Float) {}
                     override fun onBufferReceived(buffer: ByteArray?) {}
-                    override fun onEndOfSpeech() {}
+                    override fun onEndOfSpeech() {
+                        listening = false
+                    }
 
                     override fun onError(error: Int) {
-                        val msg = when (error) {
-                            SpeechRecognizer.ERROR_NO_MATCH -> "No match"
-                            SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> "Timeout"
-                            SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> "Mic permission"
-                            SpeechRecognizer.ERROR_NETWORK, SpeechRecognizer.ERROR_NETWORK_TIMEOUT ->
-                                "Network required (offline engine missing)"
-                            else -> "STT error $error"
-                        }
-                        onError(msg)
+                        listening = false
+                        onError(errorMessage(error))
                     }
 
                     override fun onResults(results: Bundle?) {
+                        listening = false
                         val texts = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-                        val best = texts?.firstOrNull().orEmpty()
-                        if (best.isNotBlank()) onFinal(best) else onError("Empty result")
+                        val best = texts?.firstOrNull()?.trim().orEmpty()
+                        if (best.isNotEmpty()) onFinal(best)
+                        else onError("No speech recognized")
                     }
 
                     override fun onPartialResults(partialResults: Bundle?) {
                         val texts = partialResults?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-                        texts?.firstOrNull()?.let { onPartial(it) }
+                        val partial = texts?.firstOrNull()?.trim().orEmpty()
+                        if (partial.isNotEmpty()) onPartial(partial)
                     }
 
                     override fun onEvent(eventType: Int, params: Bundle?) {}
@@ -98,38 +85,43 @@ class LocalSttEngine(private val context: Context) {
                     putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, true)
                     putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3)
                 }
-                startListening(intent)
+                r.startListening(intent)
+            } catch (e: Exception) {
+                Log.e(TAG, "startListening failed", e)
+                onError("Failed to start recognizer: ${e.message ?: e.javaClass.simpleName}")
+                cancel()
             }
         }
-    }
-
-    private fun startVosk(
-        onPartial: (String) -> Unit,
-        onFinal: (String) -> Unit,
-        onError: (String) -> Unit
-    ) {
-        // Real Vosk wiring (requires vosk-android AAR + model):
-        // val model = Model(assetPath)
-        // val recognizer = Recognizer(model, 16000f)
-        // ... audio record loop → recognizer.acceptWaveForm → partial/final JSON
-        onError("Vosk model present but native binding not yet linked — using system STT")
-        // Fall through would be ideal; for now surface the message so the
-        // developer knows the model was detected.
-        // Re-entry to system path:
-        voskAvailable = false
-        start(onPartial, onFinal, onError)
     }
 
     fun cancel() {
+        listening = false
         mainHandler.post {
             try {
                 recognizer?.cancel()
-                recognizer?.destroy()
             } catch (e: Exception) {
                 Log.w(TAG, "cancel", e)
             }
+            try {
+                recognizer?.destroy()
+            } catch (e: Exception) {
+                Log.w(TAG, "destroy", e)
+            }
             recognizer = null
         }
+    }
+
+    private fun errorMessage(error: Int): String = when (error) {
+        SpeechRecognizer.ERROR_AUDIO -> "Audio recording error"
+        SpeechRecognizer.ERROR_CLIENT -> "Client error"
+        SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> "Microphone permission required"
+        SpeechRecognizer.ERROR_NETWORK -> "Network error (offline engine unavailable)"
+        SpeechRecognizer.ERROR_NETWORK_TIMEOUT -> "Network timeout"
+        SpeechRecognizer.ERROR_NO_MATCH -> "No match"
+        SpeechRecognizer.ERROR_RECOGNIZER_BUSY -> "Recognizer busy"
+        SpeechRecognizer.ERROR_SERVER -> "Server error"
+        SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> "No speech input"
+        else -> "Recognition error ($error)"
     }
 
     companion object {

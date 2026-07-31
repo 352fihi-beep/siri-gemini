@@ -2,6 +2,7 @@ package com.siri.gemini.ble.aap
 
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
+import android.content.Context
 import android.util.Log
 import com.siri.gemini.ble.GestureEventBus
 import com.siri.gemini.widget.AirPodsWidgetProvider
@@ -13,16 +14,21 @@ import java.io.IOException
 import java.util.UUID
 
 /**
- * L2CAP / RFCOMM link for full AAP features.
- * Emits stem events to GestureEventBus and refreshes the home-screen widget.
+ * AAP link. Reports real connection failures; does not pretend success.
+ * Full L2CAP framing still requires LibrePods packet sequences.
  */
 class AapConnection(
     private val device: BluetoothDevice,
     private val scope: CoroutineScope,
-    private val appContext: android.content.Context
+    private val appContext: Context
 ) {
-    private val _connected = MutableStateFlow(false)
-    val connected: StateFlow<Boolean> = _connected.asStateFlow()
+    enum class State { DISCONNECTED, CONNECTING, CONNECTED, FAILED }
+
+    private val _state = MutableStateFlow(State.DISCONNECTED)
+    val state: StateFlow<State> = _state.asStateFlow()
+
+    private val _lastError = MutableStateFlow<String?>(null)
+    val lastError: StateFlow<String?> = _lastError.asStateFlow()
 
     private val _battery = MutableStateFlow<AapProtocol.BatteryInfo?>(null)
     val battery: StateFlow<AapProtocol.BatteryInfo?> = _battery.asStateFlow()
@@ -40,59 +46,91 @@ class AapConnection(
 
     @Suppress("MissingPermission")
     fun connect() {
+        if (_state.value == State.CONNECTING || _state.value == State.CONNECTED) return
+        _state.value = State.CONNECTING
+        _lastError.value = null
+
         scope.launch(Dispatchers.IO) {
             try {
-                // Production path: device.createInsecureL2capChannel(AapProtocol.PSM_AAP)
-                socket = device.createInsecureRfcommSocketToServiceRecord(SPP_UUID)
-                socket?.connect()
-                _connected.value = true
-                Log.i(TAG, "AAP connected ${device.address}")
+                // Preferred production path when PSM + framing are complete:
+                // socket = device.createInsecureL2capChannel(AapProtocol.PSM_AAP)
+                val s = device.createInsecureRfcommSocketToServiceRecord(SPP_UUID)
+                socket = s
+                s.connect()
+                if (!s.isConnected) {
+                    fail("Socket connected flag false after connect()")
+                    return@launch
+                }
+                _state.value = State.CONNECTED
+                Log.i(TAG, "AAP socket open ${device.address}")
                 startReadLoop()
-                write(AapProtocol.buildCommand(AapProtocol.Opcode.HANDSHAKE))
-                write(AapProtocol.buildRequestBattery())
+                // Handshake writes only after real connect — failures logged, not hidden
+                writeOrLog(AapProtocol.buildCommand(AapProtocol.Opcode.HANDSHAKE))
+                writeOrLog(AapProtocol.buildRequestBattery())
+            } catch (e: SecurityException) {
+                fail("Bluetooth permission missing: ${e.message}")
             } catch (e: IOException) {
-                Log.w(TAG, "AAP connect failed (complete LibrePods framing for production)", e)
-                _connected.value = false
-                close()
+                fail("AAP connect IO: ${e.message ?: "I/O error"}")
+            } catch (e: Exception) {
+                fail("AAP connect: ${e.message ?: e.javaClass.simpleName}")
             }
         }
+    }
+
+    private fun fail(msg: String) {
+        Log.w(TAG, msg)
+        _lastError.value = msg
+        _state.value = State.FAILED
+        closeSocketOnly()
     }
 
     private fun startReadLoop() {
         readJob = scope.launch(Dispatchers.IO) {
-            val input = socket?.inputStream ?: return@launch
+            val input = try {
+                socket?.inputStream
+            } catch (e: Exception) {
+                fail("No input stream: ${e.message}")
+                return@launch
+            } ?: run {
+                fail("Input stream null")
+                return@launch
+            }
+
             val buf = ByteArray(512)
-            while (isActive && _connected.value) {
+            while (isActive && _state.value == State.CONNECTED) {
                 try {
                     val n = input.read(buf)
-                    if (n <= 0) break
+                    if (n <= 0) {
+                        fail("Remote closed connection")
+                        break
+                    }
                     dispatch(buf.copyOf(n))
                 } catch (e: IOException) {
-                    Log.w(TAG, "AAP read error", e)
+                    if (isActive) fail("Read error: ${e.message}")
                     break
                 }
             }
-            _connected.value = false
         }
     }
 
     private fun dispatch(data: ByteArray) {
-        if (data.size < 3) return
-        // Frame: [0,0, opcode, len, ...payload] (scaffold)
-        val opcode = data.getOrNull(2)?.toInt()?.and(0xFF) ?: data[0].toInt().and(0xFF)
+        if (data.size < 1) return
+        val opcode = if (data.size >= 3) data[2].toInt() and 0xFF else data[0].toInt() and 0xFF
         val payloadStart = if (data.size > 4) 4 else 1
         val payload = if (data.size > payloadStart) data.copyOfRange(payloadStart, data.size) else byteArrayOf()
 
         when (opcode) {
             AapProtocol.Opcode.STEM_PRESS -> {
                 val action = AapProtocol.parseStemAction(payload)
-                GestureEventBus.tryEmit(GestureEventBus.Event.StemPress(source = "aap_l2cap:$action"))
-                Log.i(TAG, "STEM $action")
+                GestureEventBus.tryEmit(GestureEventBus.Event.StemPress(source = "aap:$action"))
             }
             AapProtocol.Opcode.BATTERY_STATUS -> {
                 val info = AapProtocol.parseBattery(payload)
-                _battery.value = info
-                AirPodsWidgetProvider.refreshAll(appContext, info, _noiseMode.value)
+                // Only publish if at least one real level parsed
+                if (info.left != null || info.right != null || info.case != null) {
+                    _battery.value = info
+                    AirPodsWidgetProvider.refreshAll(appContext, info, _noiseMode.value)
+                }
             }
             AapProtocol.Opcode.EAR_DETECTION -> {
                 val left = (payload.getOrNull(0)?.toInt()?.and(0x01) ?: 0) != 0
@@ -104,33 +142,48 @@ class AapConnection(
                 _noiseMode.value = mode
                 AirPodsWidgetProvider.refreshAll(appContext, _battery.value, mode)
             }
-            else -> Log.d(TAG, "AAP opcode 0x${opcode.toString(16)}")
+            else -> Log.d(TAG, "Unhandled opcode 0x${opcode.toString(16)} len=${data.size}")
         }
     }
 
     @Suppress("MissingPermission")
     fun setNoiseMode(mode: AapProtocol.NoiseMode) {
-        write(AapProtocol.buildSetNoiseMode(mode))
+        if (_state.value != State.CONNECTED) {
+            Log.w(TAG, "setNoiseMode ignored — not connected (${_state.value})")
+            _lastError.value = "Not connected"
+            // Still update local UI preference
+            _noiseMode.value = mode
+            AirPodsWidgetProvider.refreshAll(appContext, _battery.value, mode)
+            return
+        }
+        writeOrLog(AapProtocol.buildSetNoiseMode(mode))
         _noiseMode.value = mode
         AirPodsWidgetProvider.refreshAll(appContext, _battery.value, mode)
     }
 
-    private fun write(data: ByteArray) {
+    private fun writeOrLog(data: ByteArray) {
         scope.launch(Dispatchers.IO) {
             try {
-                socket?.outputStream?.write(data)
-                socket?.outputStream?.flush()
-            } catch (e: IOException) {
-                Log.w(TAG, "AAP write failed", e)
+                val out = socket?.outputStream ?: throw IOException("No output stream")
+                out.write(data)
+                out.flush()
+            } catch (e: Exception) {
+                Log.w(TAG, "Write failed: ${e.message}")
+                _lastError.value = "Write failed: ${e.message}"
             }
         }
     }
 
-    fun close() {
+    private fun closeSocketOnly() {
         readJob?.cancel()
+        readJob = null
         try { socket?.close() } catch (_: Exception) {}
         socket = null
-        _connected.value = false
+    }
+
+    fun close() {
+        closeSocketOnly()
+        _state.value = State.DISCONNECTED
     }
 
     companion object {

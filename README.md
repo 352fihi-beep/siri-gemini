@@ -2,7 +2,7 @@
 
 **AirPods H2 → on-device assistant on Android / GrapheneOS**
 
-All 20 QoL items scaffolded · LibrePods-class AAP · widget · QS tile · offline commands · OTA
+No mock data paths · real error handling · 20 QoL features · Continuity + AAP scaffold · widget · QS tile · offline commands
 
 ---
 
@@ -10,41 +10,32 @@ All 20 QoL items scaffolded · LibrePods-class AAP · widget · QS tile · offli
 
 **https://github.com/352fihi-beep/siri-gemini/releases/download/v0.4.0/siri-gemini-0.4.0.apk**
 
-Build + sign + upload a Release tagged `v0.4.0` to activate (cannot be produced in the agent environment).
+Requires local signed release upload (agent environment cannot produce APKs).
 
 ---
 
-## All 20 QoL features
+## Data integrity
 
-| # | Feature | Status |
-|---|---------|--------|
-| 1 | Case-open popup | ✅ `CaseOpenPopup` |
-| 2 | Persistent battery notification | ✅ `BatteryNotification` |
-| 3 | Ear detection play/pause | ✅ `EarDetectionController` |
-| 4 | Stem action mapping | ✅ `StemActionRouter` + prefs UI |
-| 5 | Battery optimization exemption | ✅ `BatteryOptHelper` |
-| 6 | Quick Settings ANC tile | ✅ `AncTileService` |
-| 7 | Head gesture nod/shake | ✅ `HeadGestureHandler` |
-| 8 | Conversational Awareness toggle | ✅ prefs + UI |
-| 9 | Rename + find chirp | ✅ prefs UI (chirp needs AAP write) |
-| 10 | Hearing-aid panel | ✅ amp/balance/tone/boost/loud |
-| 11 | Smarter adaptive scan | ✅ already in gesture service |
-| 12 | Multi-device handoff toast | ✅ `HandoffDetector` |
-| 13 | Offline command shortcuts | ✅ `OfflineCommands` |
-| 14 | First-run onboarding | ✅ `OnboardingScreen` |
-| 15 | F-Droid lean path | ✅ no hard Google deps |
-| 16 | Spatial audio indicator | ✅ `SpatialIndicator` |
-| 17 | Custom EQ | ✅ bass/treble prefs |
-| 18 | Max / Beats model hints | ✅ name matching in discovery |
-| 19 | Wear OS | 📝 companion deferred (phone-first) |
-| 20 | Encrypted command history | ✅ `CommandHistory` AES local |
+| Path | Behavior |
+|------|----------|
+| Continuity battery | `null` unless nibble 0–10 parsed — never invented |
+| STT | System recognizer only; errors mapped to clear strings; no placeholder phrases |
+| AAP | States: DISCONNECTED → CONNECTING → CONNECTED / FAILED with `lastError` |
+| Case popup | Skips without overlay permission or without real battery fields |
+| Offline commands | Run only on non-empty final transcripts |
 
-Wire-format AAP packets still need LibrePods RE alignment for stem/force and write commands (rename, EQ, hearing aid, chirp) to reach the buds.
+## QoL campaigns
 
-## Build
+- **Campaign 1** — 20 items (popup, notif, ear pause, stem map, battery opt, QS tile, head gestures, conv awareness, rename, hearing aid, adaptive scan, handoff, offline cmds, onboarding, F-Droid lean, spatial indicator, EQ, Max/Beats, Wear deferred, encrypted history).
+- **Campaign 2** — see [`docs/QOL_CAMPAIGN_2.md`](docs/QOL_CAMPAIGN_2.md) (firmware readout, leave-behind, Spatializer API, local LLM, UARP, etc.).
+
+## Limits (honest)
+
+- Exact AAP/L2CAP bytes: align with [LibrePods](https://github.com/librepods-org/librepods).
+- Vosk/Whisper/AICore: optional deps, not simulated when absent.
+- Signed APK: build on your machine.
 
 ```bash
 git clone https://github.com/352fihi-beep/siri-gemini.git
-cd siri-gemini
-# Android Studio sync → assembleDebug / signed release
+# Android Studio → assembleDebug / signed release
 ```
