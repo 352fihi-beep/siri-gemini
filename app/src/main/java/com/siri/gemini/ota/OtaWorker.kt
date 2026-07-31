@@ -8,20 +8,22 @@ import android.net.Uri
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.work.*
-import com.siri.gemini.R
 import com.siri.gemini.SiriGeminiApp
+import com.siri.gemini.prefs.UserPrefs
 import com.siri.gemini.ui.MainActivity
 import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.concurrent.TimeUnit
 
-/**
- * GitHub Releases OTA checker + download notification.
- */
 class OtaWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, params) {
 
     override suspend fun doWork(): Result {
+        val prefs = UserPrefs(applicationContext)
+        if (prefs.noNetworkMode) {
+            Log.i(TAG, "No-network mode — skip OTA")
+            return Result.success()
+        }
         return try {
             val latest = fetchLatestRelease() ?: return Result.success()
             val current = try {
@@ -30,13 +32,12 @@ class OtaWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, p
             } catch (_: Exception) { "0" }
 
             if (isNewer(latest.tag, current)) {
-                Log.i(TAG, "Update available: ${latest.tag} (current $current)")
                 showUpdateNotification(latest)
                 setProgress(workDataOf("update_available" to latest.tag))
             }
             Result.success()
         } catch (e: Exception) {
-            Log.w(TAG, "OTA check failed", e)
+            Log.w(TAG, "OTA failed", e)
             Result.retry()
         }
     }
@@ -53,8 +54,8 @@ class OtaWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, p
         val body = conn.inputStream.bufferedReader().readText()
         val json = JSONObject(body)
         val tag = json.optString("tag_name").removePrefix("v")
-        val bodyText = json.optString("body")
-        val assets = json.optJSONArray("assets") ?: return ReleaseInfo(tag, null, bodyText)
+        val notes = json.optString("body")
+        val assets = json.optJSONArray("assets") ?: return ReleaseInfo(tag, null, notes)
         var apkUrl: String? = null
         for (i in 0 until assets.length()) {
             val a = assets.getJSONObject(i)
@@ -63,12 +64,11 @@ class OtaWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, p
                 break
             }
         }
-        return ReleaseInfo(tag, apkUrl, bodyText)
+        return ReleaseInfo(tag, apkUrl, notes)
     }
 
     private fun showUpdateNotification(info: ReleaseInfo) {
         val nm = applicationContext.getSystemService(NotificationManager::class.java)
-
         val openIntent = if (info.apkUrl != null) {
             Intent(Intent.ACTION_VIEW, Uri.parse(info.apkUrl))
         } else {
@@ -78,20 +78,17 @@ class OtaWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, p
             applicationContext, 0, openIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-
-        val notif = NotificationCompat.Builder(applicationContext, SiriGeminiApp.CHANNEL_OTA)
-            .setContentTitle("Siri Gemini update available")
-            .setContentText("Version ${info.tag} is ready")
-            .setStyle(NotificationCompat.BigTextStyle().bigText(
-                "Version ${info.tag} is ready.\n${info.notes.take(200)}"
-            ))
-            .setSmallIcon(android.R.drawable.stat_sys_download_done)
-            .setContentIntent(pi)
-            .setAutoCancel(true)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            .build()
-
-        nm.notify(OTA_NOTIFICATION_ID, notif)
+        nm.notify(
+            99,
+            NotificationCompat.Builder(applicationContext, SiriGeminiApp.CHANNEL_OTA)
+                .setContentTitle("Siri Gemini update available")
+                .setContentText("Version ${info.tag} is ready")
+                .setStyle(NotificationCompat.BigTextStyle().bigText("Version ${info.tag}\n${info.notes.take(200)}"))
+                .setSmallIcon(android.R.drawable.stat_sys_download_done)
+                .setContentIntent(pi)
+                .setAutoCancel(true)
+                .build()
+        )
     }
 
     private fun isNewer(remote: String, local: String): Boolean {
@@ -110,22 +107,18 @@ class OtaWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, p
 
     companion object {
         private const val TAG = "OtaWorker"
-        private const val UNIQUE = "siri_gemini_ota"
-        private const val OTA_NOTIFICATION_ID = 99
-
         fun enqueue(context: Context) {
+            if (UserPrefs(context).noNetworkMode) return
             val constraints = Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.CONNECTED)
                 .setRequiresBatteryNotLow(true)
                 .build()
-
             val request = PeriodicWorkRequestBuilder<OtaWorker>(12, TimeUnit.HOURS)
                 .setConstraints(constraints)
                 .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 30, TimeUnit.MINUTES)
                 .build()
-
             WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-                UNIQUE,
+                "siri_gemini_ota",
                 ExistingPeriodicWorkPolicy.KEEP,
                 request
             )

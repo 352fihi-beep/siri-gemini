@@ -5,13 +5,13 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
-import com.siri.gemini.R
 import com.siri.gemini.SiriGeminiApp
+import com.siri.gemini.ble.AirPodsGestureService
 import com.siri.gemini.ble.aap.AapProtocol
 import com.siri.gemini.ui.MainActivity
 
 /**
- * QoL #2 — persistent low-priority notification with live battery + ANC.
+ * Persistent battery notification + Campaign 2 #7 ANC action buttons.
  */
 object BatteryNotification {
 
@@ -33,6 +33,18 @@ object BatteryNotification {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
+        fun noiseAction(label: String, mode: AapProtocol.NoiseMode, req: Int): NotificationCompat.Action {
+            val i = Intent(context, AirPodsGestureService::class.java).apply {
+                action = AirPodsGestureService.ACTION_SET_NOISE
+                putExtra(AirPodsGestureService.EXTRA_NOISE_MODE, mode.code)
+            }
+            val pi = PendingIntent.getService(
+                context, req, i,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            return NotificationCompat.Action.Builder(0, label, pi).build()
+        }
+
         return NotificationCompat.Builder(context, SiriGeminiApp.CHANNEL_BATTERY)
             .setContentTitle(name)
             .setContentText(text)
@@ -40,8 +52,12 @@ object BatteryNotification {
             .setContentIntent(open)
             .setOngoing(true)
             .setSilent(true)
+            .setOnlyAlertOnce(true)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setCategory(NotificationCompat.CATEGORY_STATUS)
+            .addAction(noiseAction("Off", AapProtocol.NoiseMode.OFF, 201))
+            .addAction(noiseAction("ANC", AapProtocol.NoiseMode.NOISE_CANCELLATION, 202))
+            .addAction(noiseAction("Trans", AapProtocol.NoiseMode.TRANSPARENCY, 203))
             .build()
     }
 }
