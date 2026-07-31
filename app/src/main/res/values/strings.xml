@@ -4,5 +4,5 @@
     <string name="voice_interaction_label">Siri Gemini Assistant</string>
     <string name="notification_channel_gesture">AirPods Gesture Detection</string>
     <string name="notification_title_listening">Listening for AirPods stem</string>
-    <string name="notification_text_ready">Press stem to invoke assistant</string>
+    <string name="notification_text_ready">Press stem or use AAP controls</string>
 </resources>
