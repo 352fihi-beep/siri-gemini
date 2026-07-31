@@ -18,30 +18,30 @@ class SiriGeminiApp : Application() {
             val nm = getSystemService(NotificationManager::class.java)
 
             nm.createNotificationChannel(
-                NotificationChannel(
-                    CHANNEL_GESTURE,
-                    getString(R.string.notification_channel_gesture),
-                    NotificationManager.IMPORTANCE_LOW
-                ).apply {
+                NotificationChannel(CHANNEL_GESTURE, getString(R.string.notification_channel_gesture),
+                    NotificationManager.IMPORTANCE_LOW).apply {
                     description = "AirPods stem + AAP listener"
                     setShowBadge(false)
-                }
-            )
+                })
 
             nm.createNotificationChannel(
-                NotificationChannel(
-                    CHANNEL_OTA,
-                    "Updates",
-                    NotificationManager.IMPORTANCE_DEFAULT
-                ).apply {
+                NotificationChannel(CHANNEL_OTA, "Updates",
+                    NotificationManager.IMPORTANCE_DEFAULT).apply {
                     description = "Siri Gemini OTA updates"
-                }
-            )
+                })
+
+            nm.createNotificationChannel(
+                NotificationChannel(CHANNEL_BATTERY, "AirPods battery",
+                    NotificationManager.IMPORTANCE_LOW).apply {
+                    description = "Live battery and ANC status"
+                    setShowBadge(false)
+                })
         }
     }
 
     companion object {
         const val CHANNEL_GESTURE = "airpods_gesture"
         const val CHANNEL_OTA = "siri_gemini_ota"
+        const val CHANNEL_BATTERY = "airpods_battery"
     }
 }

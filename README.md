@@ -1,71 +1,50 @@
 # siri-gemini
 
-**AirPods H2 stem-press → on-device assistant on Android / GrapheneOS**
+**AirPods H2 → on-device assistant on Android / GrapheneOS**
 
-LibrePods-class AAP scaffold · Continuity BLE · home-screen widget (battery + ANC) · VoiceInteractionService · S-tier UI · offline STT · OTA
-
----
-
-## Download (signed APK)
-
-**https://github.com/352fihi-beep/siri-gemini/releases/download/v0.3.0/siri-gemini-0.3.0.apk**
-
-> This link goes live after you build, sign, and attach the APK to a GitHub Release tagged `v0.3.0`.
-> A real signed binary **cannot** be produced in the remote agent environment (no Android SDK / keystore).
-
-### Ship the signed APK (required local step)
-
-```bash
-git clone https://github.com/352fihi-beep/siri-gemini.git && cd siri-gemini
-
-# 1. Keystore (once)
-keytool -genkey -v -keystore siri-gemini.keystore -alias siri-gemini \
-  -keyalg RSA -keysize 2048 -validity 10000
-
-# 2. Open in Android Studio → let it create Gradle wrapper + icons
-# 3. Build → Generate Signed Bundle / APK → APK → release
-#    or: ./gradlew :app:assembleRelease   (with signingConfigs in build.gradle.kts)
-
-# 4. Create GitHub Release v0.3.0 and upload siri-gemini-0.3.0.apk
-```
-
-After that, the in-app OTA worker will notify users automatically.
+All 20 QoL items scaffolded · LibrePods-class AAP · widget · QS tile · offline commands · OTA
 
 ---
 
-## Status
+## Download
 
-| Feature | Status |
-|---------|--------|
-| Continuity BLE + adaptive scan | ✅ |
-| AAP protocol scaffold (stem, ANC, battery, ears) | ✅ Hardened |
-| Home-screen widget (battery + ANC) | ✅ |
-| Stem → VoiceInteractionSession | ✅ |
-| Glassmorphic UI + control center | ✅ |
-| Offline STT (system + Vosk-ready) | ✅ |
-| AICore detection | ✅ |
-| OTA + download notification | ✅ |
-| Exact LibrePods wire packets | ⏳ Align with their `airpods_packets` |
-| Signed APK on Releases | ⏳ Local build + upload |
+**https://github.com/352fihi-beep/siri-gemini/releases/download/v0.4.0/siri-gemini-0.4.0.apk**
 
-## Widget
+Build + sign + upload a Release tagged `v0.4.0` to activate (cannot be produced in the agent environment).
 
-Add **AirPods Battery & ANC** from the launcher widget picker. Shows L / R / Case levels and one-tap Off / ANC / Transparency. Updates from Continuity ads and AAP events.
+---
 
-## Proprietary packet layer — honest status
+## All 20 QoL features
 
-The AAP layer now has:
-- Stable opcodes and event types
-- Framed command builder
-- Stem / battery parsers
-- Connection + widget refresh path
+| # | Feature | Status |
+|---|---------|--------|
+| 1 | Case-open popup | ✅ `CaseOpenPopup` |
+| 2 | Persistent battery notification | ✅ `BatteryNotification` |
+| 3 | Ear detection play/pause | ✅ `EarDetectionController` |
+| 4 | Stem action mapping | ✅ `StemActionRouter` + prefs UI |
+| 5 | Battery optimization exemption | ✅ `BatteryOptHelper` |
+| 6 | Quick Settings ANC tile | ✅ `AncTileService` |
+| 7 | Head gesture nod/shake | ✅ `HeadGestureHandler` |
+| 8 | Conversational Awareness toggle | ✅ prefs + UI |
+| 9 | Rename + find chirp | ✅ prefs UI (chirp needs AAP write) |
+| 10 | Hearing-aid panel | ✅ amp/balance/tone/boost/loud |
+| 11 | Smarter adaptive scan | ✅ already in gesture service |
+| 12 | Multi-device handoff toast | ✅ `HandoffDetector` |
+| 13 | Offline command shortcuts | ✅ `OfflineCommands` |
+| 14 | First-run onboarding | ✅ `OnboardingScreen` |
+| 15 | F-Droid lean path | ✅ no hard Google deps |
+| 16 | Spatial audio indicator | ✅ `SpatialIndicator` |
+| 17 | Custom EQ | ✅ bass/treble prefs |
+| 18 | Max / Beats model hints | ✅ name matching in discovery |
+| 19 | Wear OS | 📝 companion deferred (phone-first) |
+| 20 | Encrypted command history | ✅ `CommandHistory` AES local |
 
-**It is not a complete byte-compatible LibrePods clone.** Finishing the proprietary handshake requires copying the exact sequences from [LibrePods](https://github.com/librepods-org/librepods) (their RE is the authoritative source). Until then, Continuity + manual/dev stem trigger remain the reliable paths.
+Wire-format AAP packets still need LibrePods RE alignment for stem/force and write commands (rename, EQ, hearing aid, chirp) to reach the buds.
 
-## Build (debug)
+## Build
 
 ```bash
-./gradlew :app:assembleDebug
+git clone https://github.com/352fihi-beep/siri-gemini.git
+cd siri-gemini
+# Android Studio sync → assembleDebug / signed release
 ```
-
-Grant BLE, location, mic → Start listener → set as default assistant → add widget.
