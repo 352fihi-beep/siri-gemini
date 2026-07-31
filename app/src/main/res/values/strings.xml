@@ -5,4 +5,6 @@
     <string name="notification_channel_gesture">AirPods Gesture Detection</string>
     <string name="notification_title_listening">Listening for AirPods stem</string>
     <string name="notification_text_ready">Press stem or use AAP controls</string>
+    <string name="widget_name">AirPods Battery &amp; ANC</string>
+    <string name="widget_description">Live battery and noise-control shortcuts for AirPods</string>
 </resources>

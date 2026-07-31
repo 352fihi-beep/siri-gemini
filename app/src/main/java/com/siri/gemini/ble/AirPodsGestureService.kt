@@ -3,7 +3,6 @@ package com.siri.gemini.ble
 import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.Service
-import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.bluetooth.le.BluetoothLeScanner
@@ -19,15 +18,11 @@ import com.siri.gemini.R
 import com.siri.gemini.SiriGeminiApp
 import com.siri.gemini.ble.aap.AapConnection
 import com.siri.gemini.ble.aap.AapProtocol
+import com.siri.gemini.widget.AirPodsWidgetProvider
 import kotlinx.coroutines.*
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 
-/**
- * Foreground service owning:
- * 1. Continuity BLE ad scan (nearby + battery hints)
- * 2. AAP / L2CAP connection for full stem + ANC + ear events (LibrePods path)
- */
 class AirPodsGestureService : Service() {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -48,16 +43,21 @@ class AirPodsGestureService : Service() {
             lastNearbyMs.set(System.currentTimeMillis())
             GestureEventBus.tryEmit(GestureEventBus.Event.AirPodsNearby(status))
 
-            // If we see Continuity and have a bonded device, try AAP upgrade
-            if (aap == null && bondedAirPods != null) {
-                aap = AapConnection(bondedAirPods!!, scope).also { it.connect() }
-            }
+            // Push Continuity battery into widget when AAP not yet connected
+            val approx = AapProtocol.BatteryInfo(
+                left = status.leftBattery,
+                right = status.rightBattery,
+                case = status.caseBattery
+            )
+            AirPodsWidgetProvider.refreshAll(this@AirPodsGestureService, approx, null)
 
-            Log.d(TAG, "Continuity: L=${status.leftBattery} R=${status.rightBattery}")
+            if (aap == null && bondedAirPods != null) {
+                aap = AapConnection(bondedAirPods!!, scope, applicationContext).also { it.connect() }
+            }
         }
 
         override fun onScanFailed(errorCode: Int) {
-            Log.w(TAG, "BLE scan failed: $errorCode")
+            Log.w(TAG, "scan failed $errorCode")
             scanning.set(false)
         }
     }
@@ -68,14 +68,15 @@ class AirPodsGestureService : Service() {
         startForeground(NOTIFICATION_ID, buildNotification())
 
         when (intent?.action) {
-            ACTION_TRIGGER_STEM -> {
-                scope.launch {
-                    GestureEventBus.emit(GestureEventBus.Event.StemPress(source = "manual"))
-                }
+            ACTION_TRIGGER_STEM -> scope.launch {
+                GestureEventBus.emit(GestureEventBus.Event.StemPress(source = "manual"))
             }
             ACTION_SET_NOISE -> {
-                val modeCode = intent.getIntExtra(EXTRA_NOISE_MODE, AapProtocol.NoiseMode.OFF.code)
-                aap?.setNoiseMode(AapProtocol.NoiseMode.from(modeCode))
+                val mode = AapProtocol.NoiseMode.from(
+                    intent.getIntExtra(EXTRA_NOISE_MODE, AapProtocol.NoiseMode.OFF.code)
+                )
+                aap?.setNoiseMode(mode)
+                    ?: AirPodsWidgetProvider.refreshAll(this, null, mode)
             }
             else -> {
                 discoverBondedAirPods()
@@ -87,48 +88,34 @@ class AirPodsGestureService : Service() {
 
     @SuppressLint("MissingPermission")
     private fun discoverBondedAirPods() {
-        val btManager = getSystemService(BluetoothManager::class.java)
-        val adapter = btManager?.adapter ?: return
+        val adapter = getSystemService(BluetoothManager::class.java)?.adapter ?: return
         bondedAirPods = adapter.bondedDevices?.firstOrNull { dev ->
-            val name = dev.name?.lowercase().orEmpty()
-            name.contains("airpods") || name.contains("beats")
-        }
-        if (bondedAirPods != null) {
-            Log.i(TAG, "Found bonded AirPods: ${bondedAirPods?.name}")
+            val n = dev.name?.lowercase().orEmpty()
+            n.contains("airpods") || n.contains("beats")
         }
     }
 
     @SuppressLint("MissingPermission")
     private fun startScanning() {
         if (scanning.getAndSet(true)) return
-
-        val btManager = getSystemService(BluetoothManager::class.java)
-        val adapter = btManager?.adapter
+        val adapter = getSystemService(BluetoothManager::class.java)?.adapter
         if (adapter == null || !adapter.isEnabled) {
             scanning.set(false)
             return
         }
-
         scanner = adapter.bluetoothLeScanner
         val filter = ScanFilter.Builder()
             .setManufacturerData(ContinuityParser.APPLE_COMPANY_ID, byteArrayOf(), byteArrayOf())
             .build()
-
         val settings = ScanSettings.Builder()
-            .setScanMode(
-                if (aggressive) ScanSettings.SCAN_MODE_LOW_LATENCY
-                else ScanSettings.SCAN_MODE_LOW_POWER
-            )
+            .setScanMode(if (aggressive) ScanSettings.SCAN_MODE_LOW_LATENCY else ScanSettings.SCAN_MODE_LOW_POWER)
             .setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES)
             .setMatchMode(ScanSettings.MATCH_MODE_AGGRESSIVE)
             .setReportDelay(0)
             .build()
-
         try {
             scanner?.startScan(listOf(filter), settings, scanCallback)
-            Log.i(TAG, "Continuity scan started (aggressive=$aggressive)")
         } catch (e: SecurityException) {
-            Log.e(TAG, "Missing BLE permission", e)
             scanning.set(false)
         }
 
@@ -136,14 +123,12 @@ class AirPodsGestureService : Service() {
             while (isActive) {
                 delay(15_000)
                 val ago = System.currentTimeMillis() - lastNearbyMs.get()
-                val shouldBeAggressive = ago < 30_000
-                if (shouldBeAggressive != aggressive) {
-                    aggressive = shouldBeAggressive
+                val want = ago < 30_000
+                if (want != aggressive) {
+                    aggressive = want
                     restartScan()
                 }
-                if (ago > 60_000) {
-                    GestureEventBus.tryEmit(GestureEventBus.Event.AirPodsLost)
-                }
+                if (ago > 60_000) GestureEventBus.tryEmit(GestureEventBus.Event.AirPodsLost)
             }
         }
     }
@@ -155,17 +140,15 @@ class AirPodsGestureService : Service() {
         startScanning()
     }
 
-    private fun buildNotification(): Notification {
-        return NotificationCompat.Builder(this, SiriGeminiApp.CHANNEL_GESTURE)
+    private fun buildNotification(): Notification =
+        NotificationCompat.Builder(this, SiriGeminiApp.CHANNEL_GESTURE)
             .setContentTitle(getString(R.string.notification_title_listening))
             .setContentText(getString(R.string.notification_text_ready))
             .setSmallIcon(android.R.drawable.ic_btn_speak_now)
             .setOngoing(true)
             .setSilent(true)
             .setPriority(NotificationCompat.PRIORITY_LOW)
-            .setCategory(NotificationCompat.CATEGORY_SERVICE)
             .build()
-    }
 
     @SuppressLint("MissingPermission")
     override fun onDestroy() {
