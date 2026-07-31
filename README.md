@@ -6,6 +6,34 @@ BLE Continuity parsing · adaptive scan · VoiceInteractionService · glassmorph
 
 ---
 
+## Download (pre-signed APK)
+
+Once the first release is published the direct link will be:
+
+**https://github.com/352fihi-beep/siri-gemini/releases/download/v0.2.0/siri-gemini-0.2.0.apk**
+
+> Check the [Releases page](https://github.com/352fihi-beep/siri-gemini/releases) for the latest signed APK.
+> The in-app OTA worker already points at this repository and will detect new tags automatically.
+
+### How to publish the signed APK (one-time)
+
+```bash
+# 1. Create a keystore (only once)
+keytool -genkey -v -keystore siri-gemini.keystore -alias siri-gemini \
+  -keyalg RSA -keysize 2048 -validity 10000
+
+# 2. Build the release APK (Android Studio or CLI)
+./gradlew :app:assembleRelease
+
+# 3. Sign + align (or use Android Studio "Generate Signed APK")
+# 4. Create a GitHub Release tagged v0.2.0 and attach the APK
+#    named siri-gemini-0.2.0.apk
+```
+
+After that the download URL above becomes live and the OTA checker will start offering updates.
+
+---
+
 ## Status — v0.2.0-qol (all parallel tracks landed)
 
 | Track | Status |
@@ -15,7 +43,7 @@ BLE Continuity parsing · adaptive scan · VoiceInteractionService · glassmorph
 | 3. AICore / Gemini Nano feature-flag bridge | ✅ Scaffold (flag off) |
 | 4. GitHub Releases OTA via WorkManager | ✅ Done |
 
-## Quick start
+## Quick start (debug)
 
 ```bash
 git clone https://github.com/352fihi-beep/siri-gemini.git
@@ -43,7 +71,7 @@ cd siri-gemini
 - Full L2CAP / AAP stem-press (LibrePods protocol) for reliable force-sensor events
 - Vosk / Whisper.cpp quantized as stronger offline STT
 - Real AICore binding when targeting supported Pixels
-- Signed release + proper notification for OTA APK download
+- First signed release uploaded to GitHub Releases
 
 ## Credits
 
