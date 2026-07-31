@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Siri Gemini</string>
+    <string name="voice_interaction_label">Siri Gemini Assistant</string>
+    <string name="notification_channel_gesture">AirPods Gesture Detection</string>
+    <string name="notification_title_listening">Listening for AirPods stem</string>
+    <string name="notification_text_ready">Press stem to invoke assistant</string>
+</resources>
