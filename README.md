@@ -2,58 +2,51 @@
 
 **AirPods H2 stem-press → native on-device Gemini-style assistant on Android / GrapheneOS**
 
-BLE Continuity parsing · L2CAP gesture bridge · VoiceInteractionService · glassmorphic UI · OTA · **zero cloud API keys**
+BLE Continuity parsing · adaptive scan · VoiceInteractionService · glassmorphic UI · local STT · OTA · **zero cloud API keys**
 
 ---
 
-## Vision
+## Status — v0.2.0-qol (all parallel tracks landed)
 
-Press the force sensor on an AirPods (H2 / Pro 2 / 3 / 4) stem and instantly get a private, on-device voice assistant experience that feels like a native system assistant. No Google account required for the core path, no API keys, GrapheneOS-first.
+| Track | Status |
+|-------|--------|
+| 1. BLE ScanFilter (Apple `0x004C`) + adaptive duty + event bus | ✅ Done |
+| 2. Glassmorphic session UI + local STT skeleton | ✅ Done |
+| 3. AICore / Gemini Nano feature-flag bridge | ✅ Scaffold (flag off) |
+| 4. GitHub Releases OTA via WorkManager | ✅ Done |
 
-## Architecture (performance-first)
-
-| Layer | Tech | Optimization notes |
-|-------|------|--------------------|
-| Gesture detection | Apple Continuity BLE ads + LibrePods-compatible L2CAP | ScanFilter on `0x004C`, adaptive duty cycle, ConnectedDevice FGS |
-| Assistant surface | `VoiceInteractionService` + `VoiceInteractionSession` + `RecognitionService` | System-kept-alive, minimal wake locks |
-| UI | Jetpack Compose + glassmorphism | RenderEffect blur (API 31+) with solid fallback, no heavy assets |
-| Intelligence | AICore / Gemini Nano (when present) → quantized local STT/TTS | Zero network for core path |
-| Updates | GitHub Releases + WorkManager | Doze-aware, differential |
-| Build | R8 full mode, baseline profiles, minSdk 31 | Low-RAM friendly |
-
-## Hardware & OS constraints addressed
-
-- **GrapheneOS** — no hard dependency on Play Services / AICore. Core gesture → assistant path works with AOSP Bluetooth.
-- **Low RAM** — aggressive shrinking, no ML by default, Compose only.
-- **Battery** — BLE only aggressive when AirPods are detected nearby; otherwise low-duty or stopped.
-- **Stem press reliability** — pure ad parsing is insufficient; the L2CAP bridge (inspired by [LibrePods](https://github.com/librepods-org/librepods)) is the viable path.
-
-## Quick start (developer)
+## Quick start
 
 ```bash
 git clone https://github.com/352fihi-beep/siri-gemini.git
 cd siri-gemini
+# Open in Android Studio → let it generate wrapper + icons if missing
 ./gradlew :app:assembleDebug
 ```
 
-Requires Android Studio Ladybug+ / AGP 8.7+, JDK 17+.
+1. Install the APK
+2. Grant BLE + location + mic
+3. Tap **Start gesture listener**
+4. Set **Siri Gemini** as default assistant in system settings
+5. Use **Simulate stem press** (dev) or wait for real Continuity ads / future L2CAP stem events
 
-## Status
+## Architecture highlights
 
-Scaffold is production-oriented. Next concrete milestones:
+- **AirPodsGestureService** — filtered BLE scan, adaptive LOW_POWER ↔ LOW_LATENCY, emits on `GestureEventBus`
+- **SiriGeminiVoiceInteractionService** — listens for `StemPress`, calls `showSession`
+- **LocalSttEngine** — system `SpeechRecognizer` with `EXTRA_PREFER_OFFLINE`
+- **AiCoreBridge** — feature-flagged no-op until device + deps are ready
+- **OtaWorker** — 12 h periodic GitHub Releases check, battery-aware
 
-1. Wire Continuity parser + basic stem-press event emission
-2. Complete VoiceInteractionSession with glassmorphic overlay
-3. Local STT fallback (Vosk / Whisper.cpp quantized)
-4. Optional AICore binding
-5. First signed release + OTA pipeline
+## Next (still open)
 
-## Credits & prior art
+- Full L2CAP / AAP stem-press (LibrePods protocol) for reliable force-sensor events
+- Vosk / Whisper.cpp quantized as stronger offline STT
+- Real AICore binding when targeting supported Pixels
+- Signed release + proper notification for OTA APK download
 
-- LibrePods team (kavishdevar et al.) for the hard protocol RE
-- Apple Continuity reverse-engineering papers (PETS, ShmooCon)
-- Android VoiceInteractionService documentation
+## Credits
 
----
+LibrePods RE, Apple Continuity research (PETS / ShmooCon), Android VoiceInteractionService docs.
 
 Built for people who want the AirPods force sensor to feel first-class on a locked-down Android.

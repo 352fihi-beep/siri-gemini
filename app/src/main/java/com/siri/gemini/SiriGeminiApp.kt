@@ -4,11 +4,14 @@ import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
+import com.siri.gemini.ota.OtaWorker
 
 class SiriGeminiApp : Application() {
     override fun onCreate() {
         super.onCreate()
         createNotificationChannels()
+        // OTA is also enqueued from MainActivity; safe to call early
+        OtaWorker.enqueue(this)
     }
 
     private fun createNotificationChannels() {

@@ -10,14 +10,12 @@ android {
 
     defaultConfig {
         applicationId = "com.siri.gemini"
-        minSdk = 31          // modern BLE + RenderEffect + privacy features
+        minSdk = 31
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1.0-qol"
+        versionCode = 2
+        versionName = "0.2.0-qol"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
-        // Keep the APK lean
         vectorDrawables.useSupportLibrary = true
     }
 
@@ -29,8 +27,6 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            // Baseline profile ready
-            // matchingFallbacks += listOf("debug")
         }
         debug {
             isMinifyEnabled = false
@@ -73,18 +69,12 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material:material-icons-extended")
+    implementation("androidx.compose.animation:animation")
 
-    // BLE / connectivity — keep minimal
-    implementation("androidx.bluetooth:bluetooth:1.0.0-alpha02") // or classic BluetoothAdapter for max compatibility
-
-    // Coroutines + Flow
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
-
-    // WorkManager for OTA / background
     implementation("androidx.work:work-runtime-ktx:2.10.0")
 
-    // Optional: AICore binding will be added behind a feature flag
-    // implementation("com.google.ai.edge:...") // only when device supports
+    // System SpeechRecognizer is used; no extra STT dep required for the first path
 
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
