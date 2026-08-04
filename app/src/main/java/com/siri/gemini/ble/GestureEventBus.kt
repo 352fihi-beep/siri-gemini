@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 
 /**
- * Lightweight in-process event bus for stem-press / AirPods events.
+ * Lightweight in-process event bus for stem-press / AirPods / Hey Siri events.
  * Keeps the BLE service decoupled from the VoiceInteractionService.
  */
 object GestureEventBus {
@@ -13,6 +13,7 @@ object GestureEventBus {
     sealed class Event {
         data class StemPress(val source: String = "airpods_h2") : Event()
         data class AirPodsNearby(val status: ContinuityParser.AirPodsStatus) : Event()
+        data class HeySiri(val confidence: Int? = null) : Event()
         object AirPodsLost : Event()
     }
 
