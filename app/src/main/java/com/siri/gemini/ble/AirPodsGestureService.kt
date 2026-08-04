@@ -33,6 +33,7 @@ class AirPodsGestureService : Service() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val scanning = AtomicBoolean(false)
     private val lastNearbyMs = AtomicLong(0L)
+    private val lastHeySiriMs = AtomicLong(0L)
     private var aggressive = false
     private var lastLidOpen: Boolean? = null
 
@@ -50,7 +51,18 @@ class AirPodsGestureService : Service() {
             leaveBehind.onRssi(rssi)
 
             val mfg = result.scanRecord?.getManufacturerSpecificData(ContinuityParser.APPLE_COMPANY_ID)
-            val status = ContinuityParser.parse(mfg) ?: return
+            val parsed = ContinuityParser.parse(mfg) ?: return
+
+            // 0x08 Hey Siri with cooldown (3s)
+            parsed.heySiri?.let {
+                val now = System.currentTimeMillis()
+                if (now - lastHeySiriMs.get() > 3_000L) {
+                    lastHeySiriMs.set(now)
+                    GestureEventBus.tryEmit(GestureEventBus.Event.HeySiri(it.confidence))
+                }
+            }
+
+            val status = parsed.status ?: return
 
             lastNearbyMs.set(System.currentTimeMillis())
             GestureEventBus.tryEmit(GestureEventBus.Event.AirPodsNearby(status))
@@ -62,7 +74,6 @@ class AirPodsGestureService : Service() {
             )
             AirPodsWidgetProvider.refreshAll(this@AirPodsGestureService, approx, null)
 
-            // Battery notification only with real numbers
             if (approx.left != null || approx.right != null || approx.case != null) {
                 val nm = getSystemService(NotificationManager::class.java)
                 nm.notify(
@@ -76,7 +87,6 @@ class AirPodsGestureService : Service() {
                 )
             }
 
-            // Case-open popup on real lid transition
             val lid = status.lidOpen
             if (lid == true && lastLidOpen == false) {
                 CaseOpenPopup.show(this@AirPodsGestureService, approx, prefs.airpodsName)
@@ -192,7 +202,6 @@ class AirPodsGestureService : Service() {
                     scanning.set(false)
                     startScanning()
                 }
-                // Stop scan after prolonged absence (Campaign 2 power)
                 if (ago > 300_000) {
                     try { scanner.stopScan(scanCallback) } catch (_: Exception) {}
                     scanning.set(false)
