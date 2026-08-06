@@ -9,6 +9,8 @@ import android.util.Log
  */
 object LocalLlmBridge {
 
+    private const val TAG = "LocalLlm"
+
     fun isAvailable(context: Context): Boolean {
         // Detect optional native lib without loading mock answers
         return try {
@@ -32,9 +34,5 @@ object LocalLlmBridge {
         }
         onError("LLM library present but session API not linked")
         Log.i(TAG, "generate refused — no silent mock output")
-    }
-
-    companion object {
-        private const val TAG = "LocalLlm"
     }
 }

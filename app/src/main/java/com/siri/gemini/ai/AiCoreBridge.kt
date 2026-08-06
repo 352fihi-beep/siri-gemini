@@ -18,6 +18,8 @@ import android.util.Log
  */
 object AiCoreBridge {
 
+    private const val TAG = "AiCoreBridge"
+
     // Flip to true only after adding the AICore dependency and testing on device
     const val FEATURE_FLAG = true
 
@@ -66,9 +68,5 @@ object AiCoreBridge {
         // model.generateContent(prompt)
         Log.i(TAG, "AICore generate stub for prompt length=${prompt.length}")
         onError("AICore detected but SDK binding not yet linked — add AI Edge dependency")
-    }
-
-    companion object {
-        private const val TAG = "AiCoreBridge"
     }
 }
