@@ -39,14 +39,14 @@ object NativeGeminiRouter {
 
         if (isOnDeviceAvailable(context)) {
             var resultMsg = "On-device path selected"
-            var ok = false
+            val ok = java.util.concurrent.atomic.AtomicBoolean(false)
             val latch = CountDownLatch(1)
             AiCoreBridge.generate(
                 context,
                 prompt,
                 onResult = {
                     resultMsg = it
-                    ok = true
+                    ok.set(true)
                     latch.countDown()
                 },
                 onError = {
@@ -56,7 +56,7 @@ object NativeGeminiRouter {
             )
             // Wait up to 5 seconds for on-device generation
             latch.await(5, TimeUnit.SECONDS)
-            return if (ok) {
+            return if (ok.get()) {
                 RouteResult(Mode.ON_DEVICE, resultMsg)
             } else {
                 launchSystemGemini(context, prompt)
