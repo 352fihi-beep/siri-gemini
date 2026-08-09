@@ -18,8 +18,9 @@ object RssiTracker {
     fun latest(): Int? = samples.lastOrNull()
 
     fun average(): Int? {
-        if (samples.isEmpty()) return null
-        return samples.sum() / samples.size
+        val list = samples.toList()
+        if (list.isEmpty()) return null
+        return list.sum() / list.size
     }
 
     fun snapshot(): List<Int> = samples.toList()

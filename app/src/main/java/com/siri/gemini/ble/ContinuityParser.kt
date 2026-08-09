@@ -80,7 +80,7 @@ object ContinuityParser {
             val type = data[offset].toInt() and 0xFF
             val len = data[offset + 1].toInt() and 0xFF
             offset += 2
-            if (len < 0 || offset + len > data.size) break
+            if (offset + len > data.size) break
             val value = data.copyOfRange(offset, offset + len)
             offset += len
 

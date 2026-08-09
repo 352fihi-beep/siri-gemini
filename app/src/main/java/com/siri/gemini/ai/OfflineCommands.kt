@@ -21,13 +21,16 @@ object OfflineCommands {
 
         Regex("""(?:set |start )?(?:a )?timer (?:for )?(\d+)\s*(minutes?|mins?|seconds?|secs?)""").find(t)?.let {
             val n = it.groupValues[1].toIntOrNull() ?: return@let
+            if (n <= 0) return@let
             val unit = it.groupValues[2]
             val seconds = if (unit.startsWith("sec")) n else n * 60
-            context.startActivity(Intent(AlarmClock.ACTION_SET_TIMER).apply {
-                putExtra(AlarmClock.EXTRA_LENGTH, seconds)
-                putExtra(AlarmClock.EXTRA_SKIP_UI, true)
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            })
+            try {
+                context.startActivity(Intent(AlarmClock.ACTION_SET_TIMER).apply {
+                    putExtra(AlarmClock.EXTRA_LENGTH, seconds)
+                    putExtra(AlarmClock.EXTRA_SKIP_UI, true)
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                })
+            } catch (_: Exception) { return false }
             return true
         }
 
@@ -37,12 +40,15 @@ object OfflineCommands {
             val ampm = it.groupValues[3]
             if (ampm == "pm" && hour < 12) hour += 12
             if (ampm == "am" && hour == 12) hour = 0
-            context.startActivity(Intent(AlarmClock.ACTION_SET_ALARM).apply {
-                putExtra(AlarmClock.EXTRA_HOUR, hour)
-                putExtra(AlarmClock.EXTRA_MINUTES, minute)
-                putExtra(AlarmClock.EXTRA_SKIP_UI, true)
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            })
+            if (hour > 23 || minute > 59) return@let
+            try {
+                context.startActivity(Intent(AlarmClock.ACTION_SET_ALARM).apply {
+                    putExtra(AlarmClock.EXTRA_HOUR, hour)
+                    putExtra(AlarmClock.EXTRA_MINUTES, minute)
+                    putExtra(AlarmClock.EXTRA_SKIP_UI, true)
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                })
+            } catch (_: Exception) { return false }
             return true
         }
 

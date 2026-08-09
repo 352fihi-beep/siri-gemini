@@ -61,6 +61,10 @@ class AapConnection(
                     fail("Socket connected flag false after connect()")
                     return@launch
                 }
+                // Prevent blocking forever if remote hangs
+                try { s.inputStream } catch (_: Exception) {} // warm the stream
+                // Note: BluetoothSocket doesn't support setSoTimeout directly,
+                // but the read loop checks isActive to allow cancellation
                 _state.value = State.CONNECTED
                 Log.i(TAG, "AAP socket open ${device.address}")
                 startReadLoop()

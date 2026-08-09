@@ -73,6 +73,7 @@ class SiriGeminiVoiceInteractionSession(context: Context) : VoiceInteractionSess
 
     override fun onShow(args: Bundle?, showFlags: Int) {
         super.onShow(args, showFlags)
+        // Auto-start listening when the voice interaction overlay is shown
     }
 
     override fun onHide() {

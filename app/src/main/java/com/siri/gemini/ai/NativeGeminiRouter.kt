@@ -6,8 +6,12 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import com.siri.gemini.ble.ContinuityParser
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 /**
  * Native Gemini only — no developer API keys.
@@ -36,15 +40,22 @@ object NativeGeminiRouter {
         if (isOnDeviceAvailable(context)) {
             var resultMsg = "On-device path selected"
             var ok = false
+            val latch = CountDownLatch(1)
             AiCoreBridge.generate(
                 context,
                 prompt,
                 onResult = {
                     resultMsg = it
                     ok = true
+                    latch.countDown()
                 },
-                onError = { resultMsg = it }
+                onError = {
+                    resultMsg = it
+                    latch.countDown()
+                }
             )
+            // Wait up to 5 seconds for on-device generation
+            latch.await(5, TimeUnit.SECONDS)
             return if (ok) {
                 RouteResult(Mode.ON_DEVICE, resultMsg)
             } else {
@@ -104,6 +115,10 @@ object NativeGeminiRouter {
     private fun copyToClipboard(context: Context, text: String) {
         val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         cm.setPrimaryClip(ClipData.newPlainText("Siri Gemini → Gemini", text))
+        // Clear clipboard after 10 seconds for privacy
+        Handler(Looper.getMainLooper()).postDelayed({
+            try { cm.setPrimaryClip(ClipData.newPlainText("", "")) } catch (_: Exception) {}
+        }, 10_000)
     }
 
     fun buildPrompt(utterance: String, status: ContinuityParser.AirPodsStatus?): String {

@@ -15,21 +15,32 @@ class EarDetectionController(private val context: Context) {
     private val prefs = UserPrefs(context)
     private var lastLeft = false
     private var lastRight = false
+    private var lastActionMs = 0L
+    private val debounceMs = 1000L // Prevent audio thrashing on rapid in/out
 
     fun onEars(detection: AapProtocol.EarDetection) {
         if (!prefs.earAutoPause) return
 
         val anyIn = detection.leftInEar || detection.rightInEar
         val wasAny = lastLeft || lastRight
+        val now = System.currentTimeMillis()
+
+        if (now - lastActionMs < debounceMs) {
+            lastLeft = detection.leftInEar
+            lastRight = detection.rightInEar
+            return
+        }
 
         if (wasAny && !anyIn) {
             // Both out → pause
             sendMediaKey(KeyEvent.KEYCODE_MEDIA_PAUSE)
             Log.i(TAG, "Ears out → pause")
+            lastActionMs = now
         } else if (!wasAny && anyIn) {
             // At least one in → play
             sendMediaKey(KeyEvent.KEYCODE_MEDIA_PLAY)
             Log.i(TAG, "Ears in → play")
+            lastActionMs = now
         }
 
         lastLeft = detection.leftInEar

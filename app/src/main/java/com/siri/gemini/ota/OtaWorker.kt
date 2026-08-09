@@ -50,29 +50,37 @@ class OtaWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, p
             setRequestProperty("Accept", "application/vnd.github+json")
             setRequestProperty("User-Agent", "siri-gemini-ota")
         }
-        if (conn.responseCode != 200) return null
-        val body = conn.inputStream.bufferedReader().readText()
-        val json = JSONObject(body)
-        val tag = json.optString("tag_name").removePrefix("v")
-        val notes = json.optString("body")
-        val assets = json.optJSONArray("assets") ?: return ReleaseInfo(tag, null, notes)
-        var apkUrl: String? = null
-        for (i in 0 until assets.length()) {
-            val a = assets.getJSONObject(i)
-            if (a.optString("name").endsWith(".apk", ignoreCase = true)) {
-                apkUrl = a.optString("browser_download_url")
-                break
+        try {
+            if (conn.responseCode != 200) return null
+            val body = conn.inputStream.bufferedReader().use { it.readText().take(64_000) }
+            val json = JSONObject(body)
+            val tag = json.optString("tag_name").removePrefix("v")
+            val notes = json.optString("body")
+            val assets = json.optJSONArray("assets") ?: return ReleaseInfo(tag, null, notes)
+            var apkUrl: String? = null
+            for (i in 0 until assets.length()) {
+                val a = assets.getJSONObject(i)
+                if (a.optString("name").endsWith(".apk", ignoreCase = true)) {
+                    apkUrl = a.optString("browser_download_url")
+                    break
+                }
             }
+            return ReleaseInfo(tag, apkUrl, notes)
+        } finally {
+            conn.disconnect()
         }
-        return ReleaseInfo(tag, apkUrl, notes)
     }
 
     private fun showUpdateNotification(info: ReleaseInfo) {
         val nm = applicationContext.getSystemService(NotificationManager::class.java)
         val openIntent = if (info.apkUrl != null) {
-            Intent(Intent.ACTION_VIEW, Uri.parse(info.apkUrl))
+            Intent(Intent.ACTION_VIEW, Uri.parse(info.apkUrl)).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
         } else {
-            Intent(applicationContext, MainActivity::class.java)
+            Intent(applicationContext, MainActivity::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
         }
         val pi = PendingIntent.getActivity(
             applicationContext, 0, openIntent,

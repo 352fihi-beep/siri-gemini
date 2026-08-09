@@ -19,7 +19,7 @@ import android.util.Log
 object AiCoreBridge {
 
     // Flip to true only after adding the AICore dependency and testing on device
-    const val FEATURE_FLAG = true
+    const val FEATURE_FLAG = false
 
     private val SUPPORTED_MODELS = setOf(
         "pixel 8", "pixel 8 pro", "pixel 8a",

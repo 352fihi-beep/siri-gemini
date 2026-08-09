@@ -12,6 +12,7 @@ import android.view.WindowManager
 import android.widget.TextView
 import com.siri.gemini.R
 import com.siri.gemini.ble.aap.AapProtocol
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Case-open battery popup. Shows only with real data and overlay permission.
@@ -19,21 +20,22 @@ import com.siri.gemini.ble.aap.AapProtocol
 object CaseOpenPopup {
 
     private const val TAG = "CaseOpenPopup"
-    private var showing = false
+    private val showing = AtomicBoolean(false)
 
     fun show(context: Context, battery: AapProtocol.BatteryInfo?, name: String) {
-        if (showing) return
+        if (!showing.compareAndSet(false, true)) return
         if (!Settings.canDrawOverlays(context)) {
             Log.i(TAG, "Overlay permission not granted — skip popup")
+            showing.set(false)
             return
         }
         // Require at least one real battery reading
         if (battery == null || (battery.left == null && battery.right == null && battery.case == null)) {
             Log.d(TAG, "No battery data — skip popup")
+            showing.set(false)
             return
         }
 
-        showing = true
         val appCtx = context.applicationContext
         val wm = appCtx.getSystemService(Context.WINDOW_SERVICE) as WindowManager
 
@@ -61,11 +63,11 @@ object CaseOpenPopup {
                 try { wm.removeView(view) } catch (e: Exception) {
                     Log.w(TAG, "removeView", e)
                 }
-                showing = false
+                showing.set(false)
             }, 3500)
         } catch (e: Exception) {
             Log.e(TAG, "Failed to show popup", e)
-            showing = false
+            showing.set(false)
         }
     }
 }
