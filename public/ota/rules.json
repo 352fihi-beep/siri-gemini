@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "rules": [
+    {"id": "battery", "match": ["battery", "charge", "power left", "percent"], "action": "battery", "reply": "Reporting Continuity batteries."},
+    {"id": "anc", "match": ["anc", "noise cancell", "quiet the world"], "action": "noise_anc", "reply": "Noise cancellation."},
+    {"id": "trans", "match": ["transparency", "transparent", "ambient", "quiet mode"], "action": "noise_trans", "reply": "Transparency."},
+    {"id": "adaptive", "match": ["adaptive"], "action": "noise_adaptive", "reply": "Adaptive."},
+    {"id": "off", "match": ["noise off", "anc off"], "action": "noise_off", "reply": "Noise control off."},
+    {"id": "play", "match": ["play", "resume"], "action": "play", "reply": "Playing."},
+    {"id": "pause", "match": ["pause", "stop music"], "action": "pause", "reply": "Paused."}
+  ]
+}
