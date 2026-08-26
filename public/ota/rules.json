@@ -1,21 +1,21 @@
 {
-  "version": 4,
+  "version": 5,
   "rules": [
     {
       "id": "battery",
-      "match": ["battery", "charge", "power left", "percent", "battery level", "how much battery", "airpods battery", "case battery", "left battery", "right battery", "juice", "how much power", "battery percentage", "what's my battery", "battery status"],
+      "match": ["battery", "charge", "power left", "percent", "battery level", "how much battery", "airpods battery", "case battery", "left battery", "right battery", "juice", "how much power", "battery percentage", "what's my battery", "battery status", "remaining battery", "battery remaining", "how much charge", "power remaining", "buds battery", "case charge", "left charge", "right charge", "battery check"],
       "action": "battery",
       "reply": "Reporting last-seen Continuity batteries."
     },
     {
       "id": "anc",
-      "match": ["anc", "noise cancell", "noise cancel", "noise cancelling", "quiet the world", "anc on", "cancel noise", "active noise", "noise canceling", "block noise", "silence mode"],
+      "match": ["anc", "noise cancell", "noise cancel", "noise cancelling", "quiet the world", "anc on", "cancel noise", "active noise", "noise canceling", "block noise", "silence mode", "noise cancellation", "turn on anc", "enable anc", "quiet mode", "noise cancelling mode", "anc mode"],
       "action": "noise_anc",
       "reply": "Noise cancellation."
     },
     {
       "id": "trans",
-      "match": ["transparency", "transparent", "ambient", "transparency mode", "hear through", "pass through", "hear outside", "ambient mode", "hear the room", "outside sound"],
+      "match": ["transparency", "transparent", "ambient", "transparency mode", "hear through", "pass through", "hear outside", "ambient mode", "hear the room", "outside sound", "transparency on", "turn on transparency", "enable transparency", "hear surroundings", "pass-through"],
       "action": "noise_trans",
       "reply": "Transparency."
     },
@@ -33,13 +33,13 @@
     },
     {
       "id": "play",
-      "match": ["play", "resume", "play music", "start playing", "unpause", "continue", "play song", "start music", "continue playing"],
+      "match": ["play", "resume", "play music", "start playing", "unpause", "continue", "play song", "start music", "continue playing", "play audio", "resume playback", "start playback", "resume music"],
       "action": "play",
       "reply": "Playing."
     },
     {
       "id": "pause",
-      "match": ["pause", "stop music", "stop", "pause music", "halt", "pause song", "stop playing", "hold music"],
+      "match": ["pause", "stop music", "stop", "pause music", "halt", "pause song", "stop playing", "hold music", "pause playback", "stop audio", "pause audio", "halt music"],
       "action": "pause",
       "reply": "Paused."
     }
