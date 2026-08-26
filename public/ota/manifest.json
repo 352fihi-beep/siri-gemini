@@ -1,10 +1,10 @@
 {
-  "versionCode": 7,
-  "versionName": "0.4.3-autoupdate",
+  "versionCode": 8,
+  "versionName": "0.4.4-live",
   "channel": "debug",
   "silent": true,
   "apkUrl": "https://github.com/352fihi-beep/siri-gemini/releases/latest/download/siri-gemini-debug.apk",
   "rulesUrl": "https://raw.githubusercontent.com/352fihi-beep/siri-gemini/main/public/ota/rules.json",
   "rulesVersion": 3,
-  "notes": "Silent self-update when Android allows. Command-rule hot-patches apply with no install."
+  "notes": "Live telemetry fusion. AACP tries insecure L2CAP first. Assistant is preloaded with last-seen batteries."
 }
