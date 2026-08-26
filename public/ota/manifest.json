@@ -5,6 +5,6 @@
   "silent": true,
   "apkUrl": "https://github.com/352fihi-beep/siri-gemini/releases/latest/download/siri-gemini-debug.apk",
   "rulesUrl": "https://raw.githubusercontent.com/352fihi-beep/siri-gemini/main/public/ota/rules.json",
-  "rulesVersion": 4,
+  "rulesVersion": 5,
   "notes": "Last-seen telemetry is the truth. Nearby quiet is not lost. Insecure L2CAP first. Assistant preloaded with L/R/Case."
 }
