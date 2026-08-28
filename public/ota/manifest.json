@@ -1,10 +1,10 @@
 {
-  "versionCode": 9,
-  "versionName": "0.4.5-holistic",
+  "versionCode": 11,
+  "versionName": "0.5.1-complete",
   "channel": "debug",
   "silent": true,
   "apkUrl": "https://github.com/352fihi-beep/siri-gemini/releases/latest/download/siri-gemini-debug.apk",
   "rulesUrl": "https://raw.githubusercontent.com/352fihi-beep/siri-gemini/main/public/ota/rules.json",
   "rulesVersion": 6,
-  "notes": "Last-seen telemetry is the truth. Nearby quiet is not lost. Insecure L2CAP first. Assistant preloaded with L/R/Case."
+  "notes": "LibrePods/CAPod feature complete: AACP stream, 1% batteries, ANC/Trans/Adaptive, ear detection, head gestures, conversational awareness, hearing aid, custom EQ, accessibility, widgets, three QS tiles, case-open. Continuity stays the live path when L2CAP is rejected."
 }
