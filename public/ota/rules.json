@@ -1,5 +1,5 @@
 {
-  "version": 6,
+  "version": 7,
   "rules": [
     {
       "id": "battery",
@@ -42,6 +42,24 @@
       "match": ["pause", "stop music", "stop", "pause music", "halt", "pause song", "stop playing", "hold music", "pause playback", "stop audio", "pause audio", "halt music", "pause it", "stop the music", "hold playback"],
       "action": "pause",
       "reply": "Paused."
+    },
+    {
+      "id": "loudness_off",
+      "match": ["loudness off", "boost off"],
+      "action": "loudness_off",
+      "reply": "Loudness off."
+    },
+    {
+      "id": "loudness_max",
+      "match": ["max boost", "max loudness", "loudness max"],
+      "action": "loudness_max",
+      "reply": "Loudness +15 dB."
+    },
+    {
+      "id": "loudness_on",
+      "match": ["boost volume", "volume boost", "make it louder"],
+      "action": "loudness_on",
+      "reply": "Loudness +9 dB."
     }
   ]
 }
