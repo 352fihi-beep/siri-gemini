@@ -1,10 +1,10 @@
 {
-  "versionCode": 11,
-  "versionName": "0.5.1-complete",
+  "versionCode": 12,
+  "versionName": "0.5.2-loudness",
   "channel": "debug",
   "silent": true,
   "apkUrl": "https://github.com/352fihi-beep/siri-gemini/releases/latest/download/siri-gemini-debug.apk",
   "rulesUrl": "https://raw.githubusercontent.com/352fihi-beep/siri-gemini/main/public/ota/rules.json",
-  "rulesVersion": 6,
-  "notes": "LibrePods/CAPod feature complete: AACP stream, 1% batteries, ANC/Trans/Adaptive, ear detection, head gestures, conversational awareness, hearing aid, custom EQ, accessibility, widgets, three QS tiles, case-open. Continuity stays the live path when L2CAP is rejected."
+  "rulesVersion": 7,
+  "notes": "LoudnessEnhancer past 100% media volume, Equalizer-app style. Continuity still the live battery path."
 }
