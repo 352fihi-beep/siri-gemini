@@ -5,6 +5,6 @@
   "silent": true,
   "apkUrl": "https://github.com/352fihi-beep/siri-gemini/releases/latest/download/siri-gemini-debug.apk",
   "rulesUrl": "https://raw.githubusercontent.com/352fihi-beep/siri-gemini/main/public/ota/rules.json",
-  "rulesVersion": 7,
-  "notes": "LoudnessEnhancer past 100% media volume, Equalizer-app style. Continuity still the live battery path."
+  "rulesVersion": 8,
+  "notes": "LoudnessEnhancer past 100% media volume, Equalizer-app style. Continuity still the live battery path. Rules v8: extra battery/ANC/transparency/play/pause synonyms."
 }
