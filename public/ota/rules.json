@@ -1,21 +1,21 @@
 {
-  "version": 7,
+  "version": 8,
   "rules": [
     {
       "id": "battery",
-      "match": ["battery", "charge", "power left", "percent", "battery level", "how much battery", "airpods battery", "case battery", "left battery", "right battery", "juice", "how much power", "battery percentage", "what's my battery", "battery status", "remaining battery", "battery remaining", "how much charge", "power remaining", "buds battery", "case charge", "left charge", "right charge", "battery check", "battery life", "check battery", "what's the battery", "pod battery", "remaining power", "how full", "airpod battery"],
+      "match": ["battery", "charge", "power left", "percent", "battery level", "how much battery", "airpods battery", "case battery", "left battery", "right battery", "juice", "how much power", "battery percentage", "what's my battery", "battery status", "remaining battery", "battery remaining", "how much charge", "power remaining", "buds battery", "case charge", "left charge", "right charge", "battery check", "battery life", "check battery", "what's the battery", "pod battery", "remaining power", "how full", "airpod battery", "how's my battery", "left bud battery", "right bud battery", "airpods charge", "how much left", "battery of the case", "left ear battery", "right ear battery"],
       "action": "battery",
       "reply": "Reporting last-seen Continuity batteries."
     },
     {
       "id": "anc",
-      "match": ["anc", "noise cancell", "noise cancel", "noise cancelling", "quiet the world", "anc on", "cancel noise", "active noise", "noise canceling", "block noise", "silence mode", "noise cancellation", "turn on anc", "enable anc", "quiet mode", "noise cancelling mode", "anc mode", "noise cancelling on", "activate noise cancellation", "turn on noise cancelling", "block the noise", "activate anc"],
+      "match": ["anc", "noise cancell", "noise cancel", "noise cancelling", "quiet the world", "anc on", "cancel noise", "active noise", "noise canceling", "block noise", "silence mode", "noise cancellation", "turn on anc", "enable anc", "quiet mode", "noise cancelling mode", "anc mode", "noise cancelling on", "activate noise cancellation", "turn on noise cancelling", "block the noise", "activate anc", "noise cancel on", "turn on noise cancel", "active noise cancel", "enable noise cancellation"],
       "action": "noise_anc",
       "reply": "Noise cancellation."
     },
     {
       "id": "trans",
-      "match": ["transparency", "transparent", "ambient", "transparency mode", "hear through", "pass through", "hear outside", "ambient mode", "hear the room", "outside sound", "transparency on", "turn on transparency", "enable transparency", "hear surroundings", "pass-through", "ambient sound", "pass through mode", "hear ambient", "transparency mode on"],
+      "match": ["transparency", "transparent", "ambient", "transparency mode", "hear through", "pass through", "hear outside", "ambient mode", "hear the room", "outside sound", "transparency on", "turn on transparency", "enable transparency", "hear surroundings", "pass-through", "ambient sound", "pass through mode", "hear ambient", "transparency mode on", "hearthrough", "ambient on", "pass through on", "enable ambient"],
       "action": "noise_trans",
       "reply": "Transparency."
     },
@@ -33,13 +33,13 @@
     },
     {
       "id": "play",
-      "match": ["play", "resume", "play music", "start playing", "unpause", "continue", "play song", "start music", "continue playing", "play audio", "resume playback", "start playback", "resume music", "play it", "unpause the music", "resume the song"],
+      "match": ["play", "resume", "play music", "start playing", "unpause", "continue", "play song", "start music", "continue playing", "play audio", "resume playback", "start playback", "resume music", "play it", "unpause the music", "resume the song", "start the music", "play my music"],
       "action": "play",
       "reply": "Playing."
     },
     {
       "id": "pause",
-      "match": ["pause", "stop music", "stop", "pause music", "halt", "pause song", "stop playing", "hold music", "pause playback", "stop audio", "pause audio", "halt music", "pause it", "stop the music", "hold playback"],
+      "match": ["pause", "stop music", "stop", "pause music", "halt", "pause song", "stop playing", "hold music", "pause playback", "stop audio", "pause audio", "halt music", "pause it", "stop the music", "hold playback", "stop the song", "pause the song"],
       "action": "pause",
       "reply": "Paused."
     },
