@@ -1,10 +1,10 @@
 {
-  "versionCode": 12,
-  "versionName": "0.5.2-loudness",
+  "versionCode": 19,
+  "versionName": "0.8.3-parse",
   "channel": "debug",
   "silent": true,
   "apkUrl": "https://github.com/352fihi-beep/siri-gemini/releases/latest/download/siri-gemini-debug.apk",
   "rulesUrl": "https://raw.githubusercontent.com/352fihi-beep/siri-gemini/main/public/ota/rules.json",
   "rulesVersion": 8,
-  "notes": "LoudnessEnhancer past 100% media volume, Equalizer-app style. Continuity still the live battery path. Rules v8: extra battery/ANC/transparency/play/pause synonyms."
+  "notes": "Continuity parse matches OpenPods batch + LibrePods 07 19 01. Walks raw ads. Extended BLE. Samsung 07 19 0B dump is not AirPods."
 }
