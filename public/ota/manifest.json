@@ -5,6 +5,6 @@
   "silent": true,
   "apkUrl": "https://github.com/352fihi-beep/siri-gemini/releases/latest/download/siri-gemini-debug.apk",
   "rulesUrl": "https://raw.githubusercontent.com/352fihi-beep/siri-gemini/main/public/ota/rules.json",
-  "rulesVersion": 22,
-  "notes": "Rules 22: extra battery/ANC/transparency/play/pause spoken misses. Continuity parse unchanged."
+  "rulesVersion": 23,
+  "notes": "Rules 23: spoken misses for battery, ANC, transparency, play, and pause. Continuity parse unchanged."
 }
