@@ -5,6 +5,6 @@
   "silent": true,
   "apkUrl": "https://github.com/352fihi-beep/siri-gemini/releases/latest/download/siri-gemini-debug.apk",
   "rulesUrl": "https://raw.githubusercontent.com/352fihi-beep/siri-gemini/main/public/ota/rules.json",
-  "rulesVersion": 31,
-  "notes": "Rules 31: more STT synonyms for battery (bat/batt), ANC, transparency, play, and pause. No APK bump."
+  "rulesVersion": 32,
+  "notes": "Rules 32: extra STT synonyms for battery (bat/batt percent), ANC, transparency (pass through/transparent mode), play, and pause. No APK bump."
 }
