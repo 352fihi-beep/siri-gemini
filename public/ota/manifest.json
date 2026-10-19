@@ -5,6 +5,6 @@
   "silent": true,
   "apkUrl": "https://github.com/352fihi-beep/siri-gemini/releases/latest/download/siri-gemini-debug.apk",
   "rulesUrl": "https://raw.githubusercontent.com/352fihi-beep/siri-gemini/main/public/ota/rules.json",
-  "rulesVersion": 36,
-  "notes": "Rules 36: more STT synonyms for transparency (passthrough, hear thru, ambient sound mode), play (play now please, keep going, start it), pause (pause now please, hold it, stop it now), minor ANC/battery. No APK bump."
+  "rulesVersion": 37,
+  "notes": "Rules 37: additional STT synonyms for transparency (hear thru mode, open ear mode, hear surroundings), play (keep going please, play it please), pause (hold it please), ANC (cancel the noise please, anc on now please), minor battery. No APK bump."
 }
