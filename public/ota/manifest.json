@@ -5,6 +5,6 @@
   "silent": true,
   "apkUrl": "https://github.com/352fihi-beep/siri-gemini/releases/latest/download/siri-gemini-debug.apk",
   "rulesUrl": "https://raw.githubusercontent.com/352fihi-beep/siri-gemini/main/public/ota/rules.json",
-  "rulesVersion": 40,
-  "notes": "Rules 40: more STT synonyms for battery (what's the battery percentage on my airpods, check airpods battery level), ANC (turn on noise cancelling please, make the room quiet), transparency (turn on transparency please, let me hear the outside). No APK bump."
+  "rulesVersion": 41,
+  "notes": "Rules 41: additional STT synonyms for battery (whats my battery percentage, check the battery level, battery percentage on my airpods), ANC (make the room quiet please, enable anc please), transparency (let me hear surroundings, turn on transparency now), play/pause. No APK bump."
 }
