@@ -1,1 +1,12 @@
-$(cat /tmp/rules_updated.json)
+{
+  "version": 43,
+  "rules": [
+    {
+      "id": "battery",
+      "match": [
+        "battery",
+        "charge"
+      ]
+    }
+  ]
+}
