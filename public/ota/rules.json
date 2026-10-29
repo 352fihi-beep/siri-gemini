@@ -1,1 +1,14 @@
-PLACEHOLDER_WILL_REPLACE
+{
+  "version": 46,
+  "rules": [
+    {
+      "id": "battery",
+      "match": [
+        "battery",
+        "charge"
+      ],
+      "action": "battery",
+      "reply": "Battery: left {left}% right {right}% case {case}%."
+    }
+  ]
+}
