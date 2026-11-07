@@ -5,6 +5,6 @@
   "silent": true,
   "apkUrl": "https://github.com/352fihi-beep/siri-gemini/releases/latest/download/siri-gemini-debug.apk",
   "rulesUrl": "https://raw.githubusercontent.com/352fihi-beep/siri-gemini/main/public/ota/rules.json",
-  "rulesVersion": 54,
-  "notes": "Rules 54: expanded STT synonyms for battery (what's the battery on the airpods, check the battery of my airpods, pods battery how much, how charged are the pods), ANC (put on the noise cancelling, turn on noise cancel mode, activate the noise cancellation), transparency (put on transparency mode, turn transparency on), play (start playing music, resume the playback), pause (halt playing). No APK bump."
+  "rulesVersion": 55,
+  "notes": "Rules 55: added more STT synonyms for battery (battery on the airpods, how much battery on the airpods, airpods how much battery left, what's left on the battery, what's the battery level on the airpods, check battery on the airpods, how much is the battery on the pods, what's my airpods battery level, how much charge is left on the airpods, pods how much battery left), ANC (enable noise cancel, switch to noise cancelling, turn noise cancelling on please, activate noise cancel mode please), transparency (enable hear through mode), play (resume playing, play music please, resume the song, start playing the music, continue the playback, play my song, start the song), pause (halt playing the music). No APK bump."
 }
