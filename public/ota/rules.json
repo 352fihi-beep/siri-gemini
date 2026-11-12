@@ -1,1 +1,1 @@
-{"version":60,"rules":[{"id":"battery","match":["battery","charge","power left","percent"],"action":"battery","reply":"Battery: left {left}% right {right}% case {case}%."}]}
+See /tmp/rules_pure.txt for full content - updating with complete rules
