@@ -1,1 +1,1 @@
-PLACEHOLDER_WILL_REPLACE
+{"version":60,"rules":[{"id":"battery","match":["battery","charge","power left","percent"],"action":"battery","reply":"Battery: left {left}% right {right}% case {case}%."}]}
