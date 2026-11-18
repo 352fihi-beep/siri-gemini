@@ -1,1 +1,11 @@
-PLACEHOLDER_FOR_FULL_CONTENT
+{
+  "version": 66,
+  "rules": [
+    {
+      "id": "battery",
+      "match": ["battery", "charge", "whats my battery percentage", "what's the battery percentage on these"],
+      "action": "battery",
+      "reply": "Checking battery."
+    }
+  ]
+}
