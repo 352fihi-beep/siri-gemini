@@ -1,14 +1,1 @@
-{
-  "version": 67,
-  "rules": [
-    {
-      "id": "battery",
-      "match": [
-        "battery",
-        "charge"
-      ],
-      "action": "battery",
-      "reply": "Checking battery."
-    }
-  ]
-}
+See local file - full content to be inserted
