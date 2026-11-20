@@ -1,5 +1,5 @@
 {
-  "version": 67,
+  "version": 68,
   "rules": [
     {
       "id": "battery",
@@ -703,7 +703,17 @@
         "these airpods battery percentage",
         "what's the battery on these",
         "battery of these",
-        "how much charge on these"
+        "how much charge on these",
+        "battery percentage of these",
+        "whats the percent on these",
+        "how much percent on these",
+        "battery of these airpods",
+        "whats the charge on these",
+        "how much battery do these airpods have",
+        "whats the battery of these",
+        "battery percent on these airpods",
+        "how much charge do these have",
+        "whats the percentage on these"
       ],
       "action": "battery",
       "reply": "Battery: left {left}% right {right}% case {case}%."
@@ -827,7 +837,15 @@
         "turn on anc mode",
         "enable anc mode",
         "noise cancel mode please",
-        "put anc on please"
+        "put anc on please",
+        "turn on noise cancellation mode",
+        "noise cancellation mode on please",
+        "switch to noise cancellation",
+        "switch to noise cancellation mode",
+        "noise cancel mode on please",
+        "enable noise cancellation mode please",
+        "turn on the noise cancellation",
+        "activate noise cancellation mode"
       ],
       "action": "anc",
       "reply": "Noise cancellation on."
@@ -903,7 +921,14 @@
         "ambient mode please",
         "transparency mode on please",
         "switch to transparency mode please",
-        "enable transparency mode please"
+        "enable transparency mode please",
+        "ambient mode on please",
+        "turn on ambient mode",
+        "transparency mode on please now",
+        "hear through mode on please",
+        "enable ambient mode please",
+        "put on transparency mode please",
+        "switch to transparency mode please"
       ],
       "action": "transparency",
       "reply": "Transparency mode on."
@@ -1060,7 +1085,14 @@
         "play the track now",
         "play my music",
         "start playing music",
-        "resume playback please"
+        "resume playback please",
+        "unpause",
+        "unpause please",
+        "continue playing please",
+        "start playing please",
+        "resume playing please",
+        "play the track please now",
+        "start the music please"
       ],
       "action": "play",
       "reply": "Playing."
@@ -1205,7 +1237,14 @@
         "halt playing",
         "stop the music now",
         "pause the track",
-        "halt the playback now"
+        "halt the playback now",
+        "stop playing the music",
+        "stop playing the music please",
+        "pause the playback please",
+        "halt playback please",
+        "stop the playback please",
+        "pause it please",
+        "stop it please now"
       ],
       "action": "pause",
       "reply": "Paused."
