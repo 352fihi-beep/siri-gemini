@@ -1,12 +1,1 @@
-{
-  "version": 69,
-  "rules": [
-    {
-      "id": "battery",
-      "match": [
-        "battery",
-        "charge"
-      ]
-    }
-  ]
-}
+FULL_CONTENT_FROM_FILE
