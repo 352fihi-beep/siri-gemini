@@ -1,1 +1,12 @@
-PLACEHOLDER
+{
+  "version": 69,
+  "rules": [
+    {
+      "id": "battery",
+      "match": [
+        "battery",
+        "charge"
+      ]
+    }
+  ]
+}
