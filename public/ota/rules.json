@@ -1,1 +1,47 @@
-TOO_LARGE_PLACEHOLDER
+{
+  "version": 73,
+  "rules": [
+    {
+      "id": "battery",
+      "match": ["airpod battery", "airpod battery level", "airpod battery status", "airpod charge", "airpods batteries", "airpods battery", "how much battery percentage", "airpods battery percentage now", "check my airpods battery percentage please", "what percent is my battery", "battery percent please", "how full are my airpods", "how much power left on airpods", "right ear battery percentage", "how much percent is left on my airpods", "battery percentage of left ear", "battery percentage of right ear", "case battery percentage now", "what is my battery percentage"],
+      "action": "battery",
+      "reply": "Checking AirPods battery."
+    },
+    {
+      "id": "anc",
+      "match": ["anc", "turn on anc", "enable noise cancellation please", "set noise cancellation", "active noise cancellation on", "anc mode please on", "anc please on", "activate anc", "noise cancellation on"],
+      "action": "anc",
+      "reply": "Noise cancellation on."
+    },
+    {
+      "id": "trans",
+      "match": ["transparency", "activate transparency mode", "enable transparency please", "set transparency mode", "pass through mode on", "ambient sound please", "turn on transparency mode please", "activate transparency", "turn on transparency"],
+      "action": "transparency",
+      "reply": "Transparency mode on."
+    },
+    {
+      "id": "play",
+      "match": ["play", "continue the track please", "unpause the track", "resume the track", "resume playback", "play the song"],
+      "action": "play",
+      "reply": "Playing."
+    },
+    {
+      "id": "pause",
+      "match": ["pause", "pause the track", "stop the music", "halt playback"],
+      "action": "pause",
+      "reply": "Paused."
+    },
+    {
+      "id": "adaptive",
+      "match": ["adaptive"],
+      "action": "adaptive",
+      "reply": "Adaptive mode."
+    },
+    {
+      "id": "off",
+      "match": ["off"],
+      "action": "off",
+      "reply": "Off."
+    }
+  ]
+}
