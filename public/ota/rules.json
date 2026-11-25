@@ -1,1 +1,13 @@
-PLACEHOLDER
+{
+  "version": 73,
+  "rules": [
+    {
+      "id": "battery",
+      "match": [
+        "airpod battery"
+      ],
+      "action": "battery",
+      "reply": "Checking battery."
+    }
+  ]
+}
